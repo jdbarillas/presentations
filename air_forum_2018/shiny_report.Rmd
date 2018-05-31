@@ -1,0 +1,221 @@
+---
+title: "Flexdashboard with Shiny"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(tidyverse)
+library(scales)
+library(treemapify)
+```
+
+Sidebar {.sidebar}
+=====================================
+  
+```{r inputs}
+helpText("Enter University IDs for own institution and comparison group:")
+
+fluidRow(
+  column(9,
+  numericInput("university", "University ID", 222178))
+)  
+
+fluidRow(
+  column(9,
+  numericInput("comp_1", "Comparison School ID", 100654))
+)  
+
+fluidRow(
+  column(9,
+  numericInput("comp_2", "Comparison School ID", 105589))
+)  
+
+fluidRow(
+  column(9,
+  numericInput("comp_3", "Comparison School ID", 100751))
+)  
+
+fluidRow(
+  column(9,
+  numericInput("comp_4", "Comparison School ID", 100830))
+)  
+
+fluidRow(
+  column(9,
+  numericInput("comp_5", "Comparison School ID", 100724))
+)  
+
+actionButton("submit", "Submit")
+```
+
+
+```{r data}
+retention <- eventReactive(input$submit, {
+  
+  schools <- paste0(c(input$university, input$comp_1, input$comp_2, 
+                      input$comp_3, input$comp_4, input$comp_5), 
+                    collapse = ",")
+  
+  retention <-
+    sprintf(
+    "https://api.datausa.io/api/csv/?sort=desc&show=university&required=retention_rate_ft,retention_rate_pt&sumlevel=all&year=all&university=%s",
+    schools
+    ) %>% read.csv(na.strings = "None") %>% 
+    gather(starts_with("retention"),
+           key = "type", 
+           value = "Retention Rate") %>% 
+    separate(type, into = c("r1", "r2", "Type")) %>% 
+    select(-r1,-r2) %>% 
+    mutate(Type = ifelse(Type == "ft", "Full-time", "Part-time")) %>%
+    rename(Year = year) %>% 
+    mutate(`Retention Rate` = `Retention Rate` / 100)
+})
+
+
+retention_uni <- reactive({
+  retention() %>%
+  filter(university == input$university,!is.na(`Retention Rate`))
+})
+
+retention_uni_ft <-
+  reactive({
+  retention_uni() %>% filter(Type == "Full-time") %>% summarise(round(mean(`Retention Rate`) *
+  100, digits = 0)) %>% .[[1]]
+  })
+  
+retention_other <- reactive({
+  retention() %>%
+  filter(university != input$university,!is.na(`Retention Rate`))
+})
+
+retention_other_ft <-
+  reactive({
+  retention_other() %>% filter(Type == "Full-time") %>% summarise(round(mean(`Retention Rate`) *
+  100, digits = 0)) %>% .[[1]]
+  })
+```
+
+Retention Rate 
+=====================================
+
+Row {data-height=200}
+-----------------------------------------------------------------------
+
+### Note on Retention Rate
+
+Retention rate measures the number of first-time students who began their studies the previous fall and returned to school the following fall. 
+
+```{r, eval=TRUE}
+
+text <- eventReactive(input$submit, {
+  HTML(paste0("Compared with the average full-time retention rate of the comparison group, ", unique(retention_uni()$university_name)," had a retention rate ", ifelse(retention_uni_ft()>retention_other_ft(), '<b>higher</b>', '<b>less than or equal</b>')," than its peers.\n\n
+
+This chart shows how the retention rate over time at ", unique(retention_uni()$university_name)," (highlighted in blue) compares to the comparison group."))
+})
+  
+renderUI({
+
+  text()
+  
+  })
+```
+
+Row {data-height=180}
+-----------------------------------------------------------------------
+
+### Avg Retention Rate for FT Undergraduates at Institution
+
+```{r}
+renderValueBox({
+  valueBox(
+  value = ifelse(input$submit, paste0(retention_uni_ft()), "No Data"),
+  icon = "fa-percent",
+  color = "primary"
+  )
+})
+```
+
+### Avg Retention Rate for FT Undergraduates for Comparison Group
+
+```{r}
+renderValueBox({
+  valueBox(
+  value = ifelse(input$submit, paste0(retention_other_ft()), "No Data"),
+  icon = "fa-percent",
+  color = "primary"
+  )
+})
+```
+
+Row {data-height=700 data-padding=2}
+-----------------------------------------------------------------------
+
+### Retention Rate Line Chart
+
+```{r, fig.align="center"}
+
+renderPlotly({
+  
+  input$submit
+isolate({  
+p <- ggplot() +
+  geom_line(data = retention_uni(), aes(Year, `Retention Rate`, group=1, text=paste0("Year: ", Year, "\nRetention Rate: ", `Retention Rate`, "%", "\nUniversity: ", university_name)), color="blue") +
+  geom_point(data = retention_uni(), aes(Year, `Retention Rate`, group=1, text=paste0("Year: ", Year, "\nRetention Rate: ", `Retention Rate`, "%", "\nUniversity: ", university_name)), color="blue") +
+  geom_line(data = retention_other(), aes(Year, `Retention Rate`, group=university_name, text=paste0("Year: ", Year, "\nRetention Rate: ", `Retention Rate`, "%", "\nUniversity: ", university_name)), colour = "grey40") +
+  facet_grid(Type~.) +
+  theme_bw() +
+  theme(plot.margin = margin(t = 0, r =  0.5, b = 1, l = 2.2, "cm"),
+        strip.text = element_text(size=14)) 
+
+ggplotly(p = p, tooltip = "text") %>% 
+  config(displayModeBar = FALSE)
+})
+})
+
+```
+
+```{r, eval=FALSE}
+renderDataTable({
+  retention_uni()
+})
+```
+
+Blank Page 
+=====================================
+
+Column {data-height=100}
+-----------------------------------------------------------------------
+
+### Download Report {data-height=100}
+
+```{r}
+downloadButton("report", "Download Report")
+```
+
+
+```{r}
+downloadHandler(
+    filename = 'report.html',
+
+    content = function(file) {
+      src <- normalizePath('parameterized_report.Rmd')
+
+      owd <- setwd(tempdir())
+      on.exit(setwd(owd))
+      file.copy(src, 'parameterized_report.Rmd', overwrite = TRUE)
+
+      out <- rmarkdown::render('parameterized_report.Rmd', 
+                               output_format = "html_document",
+                               params = list(university=input$university,
+                                             year=2016))
+      file.rename(out, file)
+    }
+  )
+
+```

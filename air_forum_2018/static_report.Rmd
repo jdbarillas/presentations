@@ -1,0 +1,152 @@
+---
+title: "Static Report"
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+library(plotly)
+library(tidyverse)
+library(scales)
+library(treemapify)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+
+tuition <-
+  "https://api.datausa.io/api/csv/?sort=desc&show=university&required=oos_tuition,state_tuition&sumlevel=2&year=2015&university=222178" %>% read.csv()
+  
+  admissions <-
+  "https://api.datausa.io/api/csv/?sort=desc&show=university&required=applicants_total,admissions_total&sumlevel=2&year=2015&university=222178" %>% read.csv()
+  
+  sat <-
+  "https://api.datausa.io/api/csv/?sort=desc&display_names=1&show=university&required=sat_math_25,sat_math_75,sat_cr_25,sat_cr_75,sat_writing_25,sat_writing_75&sumlevel=2&year=2015&university=222178" %>% read.csv()
+  
+  enrollment <-
+  "https://api.datausa.io/api/csv/?sort=desc&display_names=1&show=enrollment_status&university=222178&required=enrollment_status,num_enrolled&sumlevel=all&year=2015" %>% read.csv() 
+
+```
+
+## Report for Abilene Christian University for the 2015 year
+
+Abilene Christian University has 4,544 students enrolled. In 2015, 10,804 prospective undergraduate students applied to the university. Of those students, 5,393 (50 percent) were admitted. It cost \$30,780 in 2015 for in-state and \$30,780 for out-of-state students.
+
+For students admitted in 2015, SAT scores for the 25th and 75th percentile were 470 and 590 on critical reading, 480 and 590 on math, and 450 and 570 on writing.
+
+### Undergraduate Admissions
+
+This chart compares the acceptance rate of Abilene Christian University by gender.
+
+```{r}
+admission_gender <-
+  "https://api.datausa.io/api/csv/?sort=desc&show=university&required=applicants_men,applicants_women,admissions_men,admissions_women&sumlevel=2&year=2015&university=222178" %>% read.csv()
+
+admission_gender %>%
+  group_by(year, university_name) %>%
+  summarise(accept_men = admissions_men / applicants_men,
+  accept_women = admissions_women / applicants_women) %>%
+  gather(starts_with("accept"), key = "gender", value = "rate") %>%
+  separate(gender, into = c("type", "gender")) %>%
+  mutate(gender = factor(
+  gender,
+  levels = c("women", "men"),
+  labels =  c("Female", "Male")
+  )) %>%
+  ggplot() +
+  geom_col(aes(x = factor(year), y = rate, fill = gender), position = position_dodge()) +
+  theme(legend.position = "bottom",
+  legend.title = element_blank()) +
+  scale_y_continuous(name = "Acceptance Rate", labels = percent) +
+  scale_x_discrete(name = "", expand = c(0.01, 0.01)) +
+  coord_flip() 
+```
+
+### Enrollment
+
+The chart below shows the enrolled student population at Abilene Christian University by ethnicity. This includes both full-time and part-time students as well as graduate and undergraduates.
+
+```{r enrollment, eval=TRUE}
+enrollment_race <-
+  "https://api.datausa.io/api/csv/?sort=desc&show=ipeds_race&university=222178,MAS&required=num_enrolled&sumlevel=all&year=2015" %>% read.csv() %>% mutate(ipeds_race_name = as.character(ipeds_race_name)) %>% arrange(num_enrolled) %>% group_by(university_name) %>% mutate(perc =
+  num_enrolled / sum(num_enrolled))
+  
+ggplot() +
+  geom_col(
+  data = enrollment_race,
+  aes(
+  x = factor(ipeds_race_name),
+  y = perc,
+  fill = university_name
+  ),
+  position = position_dodge()
+  ) +
+  scale_y_continuous(name = "Share", labels = percent) +
+  scale_x_discrete(name = "") +
+  coord_flip() +
+  theme(legend.position = "bottom",
+  legend.title = element_blank())
+```
+
+### Completions
+
+```{r}
+grad_race <-
+  "https://api.datausa.io/api/csv/?sort=desc&sumlevel=all%2Call&show=ipeds_race%2Csex&year=2015&university=222178&required=grad_rate%2Cnum_finishers" %>% read.csv()
+
+grad_race %>% 
+  ggplot() + 
+  geom_col(mapping = aes(x=ipeds_race_name, y=grad_rate, fill=sex_name), 
+           position = position_dodge()) +
+  theme(legend.position = "bottom",
+        legend.title=element_blank()) +
+  scale_y_continuous(name="Graduation Rate", labels=percent) +
+  scale_x_discrete(name="") +
+  coord_flip()
+```
+
+
+### Expenses
+
+This tree map shows all of the primary expenses by category at Abilene Christian University as a share of total expenditure.
+
+```{r, fig.height=10, fig.width=10}
+expenses <-
+  "https://api.datausa.io/api/csv/?sort=desc&show=ipeds_expense&university=222178&required=benefits_expense%2Cdep_expense%2Cinterest_expense%2Cops_expense%2Cother_expense%2Csalaries_expense&sumlevel=all&year=2015&university=222178" %>% read.csv()
+  
+expenses %>% 
+  mutate_at(.vars = vars(university_name,
+                         ipeds_expense_name,
+                         ipeds_expense),
+            as.character) %>% 
+  mutate_if(is.factor, ~as.numeric(levels(.))[.]) %>% 
+  gather(contains("expense"), -ipeds_expense_name, -ipeds_expense, 
+         key = "expense", 
+         value = "value") %>% 
+  separate(expense, 
+           into = c("expense", "type")) %>% 
+  select(-type) %>% 
+  group_by(expense, ipeds_expense_name) %>% 
+  summarise(rate=sum(value, na.rm = TRUE)) %>% 
+  mutate(perc=rate/sum(rate),
+         expense_name = case_when(
+           expense == "salaries" ~ "Salaries",
+           expense == "benefits" ~ "Benefits",
+           expense == "ops" ~ "Operations",
+           expense == "dep" ~ "Departmental",
+           expense == "interest" ~ "Interest",
+           TRUE ~ "Other"
+         )) %>% 
+  ggplot(mapping = aes(area=rate, fill=perc, 
+                       label=paste0(ipeds_expense_name, "\n", round(perc*100, 1),"%"),
+                       subgroup=expense_name)) +
+  geom_treemap() +
+  geom_treemap_subgroup_border() +
+  geom_treemap_subgroup_text(place = "bottomright", grow = TRUE, colour = "white",
+                             fontface = "italic", min.size = 0) +
+  geom_treemap_text(fontface = "bold", color = "white", place = "topleft",
+                    reflow = TRUE, min.size = 0, alpha = 0.9) +
+  scale_fill_gradient(low="#00BFC4", high="#F8766D", labels=percent) +
+  theme(legend.position = "bottom") +
+  labs(fill="Share")
+```
+

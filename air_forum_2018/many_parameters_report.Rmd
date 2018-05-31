@@ -1,0 +1,128 @@
+---
+title: "Flexdashoard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: fill
+params:
+  year:
+    label: "Year(s):"
+    value: 2015
+    input: slider
+    choices: [2016, 2015, 2014]
+  university:
+    label: "University ID:"
+    value: 222178
+    input: numeric
+    min: 100654
+    max: 489937
+  comp_1:
+    label: "Comparison School ID:"
+    value: 100654
+    input: numeric
+    min: 100654
+    max: 489937
+  comp_2:
+    label: "Comparison School ID:"
+    value: 105589
+    input: numeric
+    min: 100654
+    max: 489937
+  comp_3:
+    label: "Comparison School ID:"
+    value: 100751
+    input: numeric
+    min: 100654
+    max: 489937
+  comp_4:
+    label: "Comparison School ID:"
+    value: 100830
+    input: numeric
+    min: 100654
+    max: 489937
+  comp_5:
+    label: "Comparison School ID:"
+    value: 100724
+    input: numeric
+    min: 100654
+    max: 489937
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(plotly)
+library(tidyverse)
+library(scales)
+library(treemapify)
+
+schools <- paste0(c(params$university, params$comp_1, params$comp_2, params$comp_3, params$comp_4, params$comp_5), collapse = ",")
+
+retention <-
+  sprintf(
+  "https://api.datausa.io/api/csv/?sort=desc&show=university&required=retention_rate_ft,retention_rate_pt&sumlevel=all&year=all&university=%s",
+  schools
+  ) %>% read.csv(na.strings = "None") %>% gather(starts_with("retention"), key = "type", value =
+  "Retention Rate") %>% separate(type, into = c("r1", "r2", "Type")) %>% select(-r1,-r2) %>% mutate(Type =
+  ifelse(Type == "ft", "Full-time", "Part-time")) %>% rename(Year = year) %>% mutate(`Retention Rate` =
+  `Retention Rate` / 100)
+  
+retention_uni <- retention %>%
+  filter(university == params$university,!is.na(`Retention Rate`))
+  
+retention_uni_ft <-
+  retention_uni %>% filter(Type == "Full-time") %>% summarise(round(mean(`Retention Rate`) *
+  100, digits = 0)) %>% .[[1]]
+  
+retention_other <- retention %>%
+  filter(university != params$university,!is.na(`Retention Rate`))
+  
+retention_other_ft <-
+  retention_other %>% filter(Type == "Full-time") %>% summarise(round(mean(`Retention Rate`) *
+  100, digits = 0)) %>% .[[1]]
+```
+
+Retention Rate 
+=====================================
+
+Row {data-height=125}
+-----------------------------------------------------------------------
+
+### Note on Retention Rate
+
+Retention rate measures the number of first-time students who began their studies the previous fall and returned to school the following fall. 
+
+The average retention rate for full-time undergraduates at `r unique(retention_uni$university_name)` was `r retention_uni_ft`%. Compared with the average full-time retention rate of the comparison group (`r retention_other_ft`%), `r unique(retention_uni$university_name)` had a retention rate `r ifelse(retention_uni_ft>retention_other_ft, "higher", "less than or equal")` than its peers.
+
+This chart shows how the retention rate over time at `r unique(retention_uni$university_name)` (highlighted in blue) compares to the comparison group.
+
+Row {data-height=700 data-padding=2}
+-----------------------------------------------------------------------
+
+### Retention Rate Line Chart
+
+```{r, fig.align="center"}
+p <- ggplot() +
+  geom_line(data = retention_uni, 
+            aes(Year, `Retention Rate`, group=1, 
+                text=paste0("Year: ", Year, "\nRetention Rate: ", 
+                            `Retention Rate`, "%", "\nUniversity: ", 
+                            university_name)), color="blue") +
+  geom_point(data = retention_uni, 
+             aes(Year, `Retention Rate`, group=1, 
+                 text=paste0("Year: ", Year, "\nRetention Rate: ", 
+                             `Retention Rate`, "%", "\nUniversity: ", 
+                             university_name)), color="blue") +
+  geom_line(data = retention_other, 
+            aes(Year, `Retention Rate`, group=university_name, 
+                text=paste0("Year: ", Year, "\nRetention Rate: ", 
+                            `Retention Rate`, "%", "\nUniversity: ", 
+                            university_name)), colour = "grey40") +
+  facet_grid(Type~.) +
+  theme_bw() +
+  theme(plot.margin = margin(t=0, r=0.5, b=1, l=2.2, "cm"),
+        strip.text = element_text(size=14)) 
+
+ggplotly(p = p, tooltip = "text")
+```
+
+

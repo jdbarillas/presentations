@@ -1,0 +1,149 @@
+---
+title: "Dynamic Reproducible Reports for Decision-Makers Using R and R Markdown"
+author: "Josh Barillas | twitter: @jdbarillas | github: jbarillas"
+output: 
+  revealjs::revealjs_presentation:
+    transition: slide
+    theme: moon
+    highlight: haddock
+    center: true
+    self_contained: false
+    reveal_plugins: ["notes", "chalkboard"]
+    css: www/css/reveal.css
+    reveal_options:
+      slideNumber: true
+      previewLinks: true
+---
+
+## Who is this for?
+
+<aside class="notes">
+You already have some experience with programming in R.
+
+Learn basic and advanced concepts in R Markdown and the use of programming in the creation of reports.
+</aside>
+
+## Static vs Dynamic 
+<aside class="notes">
+What do I mean by static versus dynamic? 
+</aside>
+
+## 
+
+<aside class="notes">
+Static: content that remains the same across all instances. 
+Dynamic: Does not remain the same and usually changes according to user input
+	</aside>
+
+<iframe src="https://j-db.shinyapps.io/static_dynamic/" align="middle" width=700 height=700></iframe>
+
+# R Markdown
+
+## Background
+
+> - Markdown 
+> - R Markdown
+> - Shiny
+> - Flexdashboard
+
+<aside class="notes">
+Markdown: A simple formatting syntax for authoring HTML, PDF, and MS Word documents
+
+R Markdown: Authoring framework where you can save and execute code and generate high quality reports that can be shared with an audience. It can contain code chunks to run, text to display and document headers to guide the build process. File format allows creation of html, pdf and word documents, as well as presentations, dashboard, notebooks, applications and many more.
+
+Shiny: Combine the computational power of R with the interactivity of the modern web to build interactive web apps straight from R
+
+Flexdashboard: Group related data visualizations and content as a dashboard where components are intelligently re-sized to fit either browser or mobile devices
+</aside>
+
+## Why use R Markdown?
+
+<aside class="notes">
+More and more, analysts tend to write a lot of reports, describing their analyses and results, for our managers/leadership or to document our work for future reference. We can do that in Excel files, then copy to Word, format the document, and then propagate. I know we’ve all had great times doing this.
+</aside>
+
+## {data-background="www/images/footage-not-found.png" data-background-size=80%}
+
+<aside class="notes">
+But what if we need to update those reports?
+</aside>
+
+## Workflow
+
+> - Static
+> - One parameter to Many
+> - Structure in Flexdashboard
+> - Add reactivity using Shiny
+
+<aside class="notes">
+I use the following workflow to create dynamic reports: First, create a static report that works for one case. Then modify to take those static inputs as parameters instead. Following that, I create a flexdashboard and structure it to take the data and parameters. And then finally add the Shiny components so that your users can truly interact with the reports.
+</aside>
+
+##
+
+<aside class="notes">
+Here's a static report I've created. At the top you can see the document headers which contain the title and file output of the document. I will click on Knit here.
+
+This is a report for Abilene using IPEDS data. Charts information, text, familiar, html file. We can save and send it to anyone. Most static, ‘hard-coded’, explicitly defined. It’s for 2015, you just pass same code, ‘2015, 2015…’. Great, but not used for different purposes or easily changed. Could you set it up for the newest year? We could, use CTRL-F and look for all instances of ‘2015 and change them to ‘2016. It would work, but bad for few reasons. Could mess up code, we’ve lost original report on numbers for 2015. Sure, we could copy and create another report. But if we changed the original (added more features, branding, etc.) we’d have to do the same for each and every one of the copied reports. However, R Markdown has more flexible way of accomplishing – parameters
+</aside>
+
+##
+
+<aside class="notes">
+Exact same report. However, in YAML (YAML Ain't Markup Language: document header), created a parameter called ‘year, with a default of ‘2015. Now within document, you will not see ‘2015, 2015 appearing anymore. You’ll see this ‘params$year’ instead. Which means that now if we wanted to create a different version of this report for 2016 data, I no longer need to CTRL-F and replace, I just change the year in the YAML header to ‘2016. This changes the default value in the report. You could also, instead of just knitting the report, you can click this arrow and select KNIT WITH PARAMETERS, you get this interface. So which year would you like? ‘2016’. This report is no longer ‘hard-coded’, we’ve added flexibility by adding this parameter and we’ve reduced our chances of making a mistake. We’ve also added the ability to change the underlying code without worrying about doing it for every single version. But this is just the first step to make this dynamic.
+</aside>
+
+##
+
+<aside class="notes">
+In this example, I’ve created a whole bunch of parameters. The parameters don’t just have to numeric, like in this case. We can take advantage of Shiny’s many inputs to add Sliders, text values, Date ranges, buttons, etc. If we knit this report with the default values, you can see that we are moving away from our definition of static toward dynamic reports. To us, the coders, this is miles better from our initial report, because imagine trying to create a variant of this and trying to CTRL-F each and every parameter. We’d probably create errors, even if we just changed the YAML headers. So here we can start to take advantage of the KNIT WITH PARAMETERS feature. Now we can change the text fields, and you can see the other types of inputs available. Using this we reduced the amount of work and possible mistakes we could make.
+</aside>
+
+## 
+<aside class="notes">
+How do these parameters get passed into the code? We start with the packages we want to load and any function we might need. Here’s where we start passing parameters using the ‘params$parameter_name’ template. 
+Your mentality shifts to ‘Well, could I parameterized everything?’  Short answer: Yes. BUT! *GOLDBLUM* 
+</aside>
+
+## {data-background="www/images/could-should.jpg" data-state="nocontrol"} 
+
+<aside class="notes">
+We as the creators must be deliberate about what we parameterized. The unchanging should remain unchanged. 
+</aside>
+
+## Shiny
+
+<aside class="notes">
+We know have added flexibility to our reporting. However, to the end users, this is probably still static since they are just getting an HTML or PDF report from us. So now let’s shift to the next step: Shiny. This will ALWAYS be dynamic, even to the end users. With a slight change to the YAML header, we can add more flexibility without having to drastically change our code. Once I’ve knit this, you can see how dynamic this report has become, because now we can deliver this to the end users in a way they can choose their own input values and see the changes in real-time. This report is no longer static to either us as the creators or to the consumer.
+
+Instead of having all these parameters, we now have this ‘runtime: shiny’ in the header, our R session know that this is a Shiny app and will run it as such.
+</aside>
+
+## Flexdashboard
+
+<aside class="notes">
+This dynamic structure is created with flexdashboard using Shiny. So to talk about the structure, you can see that I’ve used fluidRows within the sidebar, which is so that the elements are not stacked but are able to put them next to each other. 
+
+And if you go to these 3 lines in the document, these orient the layout, not code related. What we’re saying here is this is page 1 and this is the first row in page 1. Now if you toggle to a different page, you can see that the sidebar follows each page. That is because we’ve made the sidebar universal here so that the inputs can be changed in all pages. 
+
+These value boxes here are also reactive to any changes to the parameters in the sidebar and are inserted into the document using this code. We’ve set the boxes to be in a new row with a relative height of 200, since they should not be too large. 
+This up here is just a brief explanation of the retention rate which I’m sure all of you know. However, I included to show you that you can insert static text as well and that not everything has to be code.
+</aside>
+
+# The End
+
+## Resources
+
+<aside class="notes">
+Again, to reiterate the workflow I use: First, create a static report. Modify to take inputs as parameters. Create flexdashboard structure. Add Shiny.
+
+There was actually a post by RStudio on their R Views blog about 2 weeks ago which shows this process as well but also gives information as to why a switch from Excel to R Markdown is beneficial. You could use to introduce this topic into your workplace. 
+</aside>
+
+- [Get Started with R Markdown](http://rmarkdown.rstudio.com)
+- [R Markdown Cheat Sheet](http://www.rstudio.com/wp-content/uploads/2016/03/rmarkdown-cheatsheet-2.0.pdf)
+- [Replacing Excel Reports with R Markdown and Shiny](https://rviews.rstudio.com/2018/05/16/replacing-excel-reports-with-r-markdown-and-shiny/)
+- [Get Started with Shiny](https://shiny.rstudio.com/tutorial/)
+- [Shiny Input Gallery](https://shiny.rstudio.com/gallery/widget-gallery.html)
+- [Flexdashboard](https://rmarkdown.rstudio.com/flexdashboard/)
+- [DataUSA API](https://datausa.io/about/api/)
