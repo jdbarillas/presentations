@@ -136,3 +136,44 @@ expenses %>%
   theme(legend.position = "bottom") +
   labs(fill="Share")
 ```
+
+
+### Knitr and Rmarkdown Engines
+
+#### Python
+
+```{python, echo=TRUE, eval=FALSE}
+x = 'hello, python world!'
+print(x.split(' '))
+```
+
+#### SQL
+
+```{r, echo=TRUE}
+library(DBI)
+db <- dbConnect(RSQLite::SQLite(), dbname = "sql.sqlite")
+```
+
+```{sql, connection=db, max.print = 20, eval=FALSE, echo=TRUE}
+SELECT * FROM trials
+```
+
+#### CSS
+
+```{css, echo=TRUE}
+body {
+  font-family: arial;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #582C83;
+}
+
+.main-container {
+  max-width: 1000px;
+  margin-left: auto;
+  margin-right: auto;
+  background-color: #fff;
+}
+```
+
