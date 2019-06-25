@@ -262,7 +262,7 @@ Customizable using HTML/CSS:
 ---
 class: middle, center
 
-# R Markdown
+# [Markdown](https://www.markdowntutorial.com/)
 
 ---
 layout:true
@@ -476,13 +476,19 @@ render("my-presentation.Rmd",
 ]
 
 ---
-class: center, middle
+class: left, middle
 # Reproducibility
 
+.left-column[
 Everything is text so can take advantage through:
 - Copy/pasting code errors into search engines
-- Version contol (git)
 - Portability (minimal file size)
+- Version contol (git)
+]
+
+.right-column[
+  ![](resources/media/images/reproducible_analysis/git.JPG)
+]
 
 ---
 class: center, middle
