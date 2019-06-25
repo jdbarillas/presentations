@@ -1,0 +1,489 @@
+---
+title: | 
+  A Primer on R Markdown
+footer: | 
+  A Primer on R Markdown
+author: |
+    [Joshua D. Barillas]{style="font-lighter:bold;font-size:1em"} \
+    [Manager, Data Analysis - AACSB International]{style="font-weight:lighter;font-size:1em"}\
+    2019-06-35 @Tampa R User Group\
+    \
+    [`r fontawesome::fa(name = "linkedin", height= "36pt", fill = "#41717a")`](https://www.linkedin.com/in/jdbarillas/)
+    [`r fontawesome::fa(name = "github-square", height= "36pt", fill = "#41717a")`](https://github.com/jdbarillas)
+    [`r fontawesome::fa(name = "twitter-square", height= "36pt", fill = "#41717a")`](https://twitter.com/jdbarillas)
+direction: false
+lang: "en"
+output:
+  xaringan::moon_reader:
+    css: ["default", "custom-fonts.css", "custom-slides.css"]
+    nature: 
+      ratio: 16:9
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      self_contained: false
+      keep_md: true
+output_dir: "docs/"
+output_file: "index.html"
+params:
+  location: Southern Brewing
+  date: !r format(Sys.Date(), "%B %d, %Y")
+---
+
+```{r setup, include=FALSE}
+library(ggplot2)
+library(magrittr)
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+```
+
+# R Markdown
+
+.left-column[
+Plain text file with 3 types of content:
+
+- YAML header surrounded by `---`
+- Text in markdown
+- Code chunks surrounded by ```
+]
+
+.right-column[
+![](resources/media/images/reproducible_analysis/md_rmarkdown.png)
+]
+
+---
+
+# Why Should I Care?
+
+.center[
+### Old Path
+]
+
+.right-column[
+.pull-left[
+.center[
+&nbsp;  
+  
+Query  
+
+`r fontawesome::fa(name = "arrow-down", height = "24pt", fill = "black")`  
+
+Analyze  
+
+`r fontawesome::fa(name = "arrow-down", height = "24pt", fill = "black")`  
+
+Graphics  
+
+`r fontawesome::fa(name = "arrow-down", height = "24pt", fill = "black")`  
+
+Report  
+    ]
+  ]
+  
+  
+.pull-right[
+.left[
+  ![](resources/media/images/query.jpg#smallest)  
+  ![](resources/media/images/analyze.jpg#smallest)  
+  ![](resources/media/images/graphics.jpg#smallest)  
+  ![](resources/media/images/report.jpg#smallest)
+    ]
+  ]
+]
+
+.left-column[
+Problems with method:
+  * Time consuming
+  * Copy/pasting (likelyhood of errors`r fontawesome::fa(name = "arrow-up", height = "16pt", fill = "#777")`)
+  * Requires multiple staff/applications
+]
+
+---
+
+# Most Important 
+
+.pull-left[
+[![Online and **FREE** bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/images/cover.png#fit)](https://bookdown.org/yihui/rmarkdown/)
+]
+
+.pull-right[[![Easy and fast way to brush up on syntax and structure  rstudio.com/resources/cheatsheets/#rmarkdown](https://www.rstudio.com/wp-content/uploads/2018/08/rmarkdown-2.0-600x464.png)](https://www.rstudio.com/resources/cheatsheets/#rmarkdown)
+]
+
+---
+# Reproducible Workflow using R Markdown
+
+.left-column[
+R Markdown Combines: 
+
+* Prose 
+* Code 
+* Results 
+
+Output formats:
+
+* Web documents __`.html`__
+* Static documents with LaTeX __`.pdf`__ 
+* MS Word __`.docx`__ 
+* Powerpoint __`.pptx`__
+* EPUB __`.epub`__
+
+]
+
+.right-column[
+
+.pull-left[
+
+1. Text in markdown:  
+ 
+  .center[Write \&#42;\&#42;what\&#42;\&#42; you want \&#42;however\&#42; you want]
+  .center[`r fontawesome::fa(name = "arrow-down", height = "12pt", fill = "black")`] 
+  .center[Write __what__ you want _however_ you want]  
+ 
+2. Inline or Chunks of Code:  
+  
+  .center[Today's date is \&#96; `r knitr::inline_expr("Sys.Date()")`\&#96;]
+  .center[`r fontawesome::fa(name = "arrow-down", height = "12pt", fill = "black")`] 
+  .center[Today's date is `r Sys.Date()`]  
+ 
+3. Figures (*Outputs*):
+  .center[
+ 
+```{r fig.height=1.5, fig.width=4}
+ggplot(mtcars) +
+  geom_histogram(aes(x = mpg)) +
+  theme(axis.title.x = element_blank())
+```
+    ]
+  ]
+  
+  .pull-right[
+    ![](resources/media/rmarkdown.JPG#fit-more)
+  ]
+]
+
+???
+
+Reproducible documents: If error discovered, or if additional data, can just re-compile the report and get new or corrected results. Versus having to reconstruct figures and tables, paste them into a Word document, and further hand-edit various detailed results. **LITERATE PROGRAMMING**
+---
+
+# PDF
+
+  .pull-left[
+  ![Overview Cover](resources/media/overview_cover.jpg#fit)  
+  ]
+  
+  .pull-right[
+  ![Overview Report](resources/media/overview_page.jpg#fit)  
+  ]
+
+???
+
+---
+
+# HTML Documents
+
+  ![](resources/media/html_document.JPG)
+
+---
+
+# Word Documents
+
+  ![](resources/media/word_document.JPG)
+
+---
+
+# Presentations
+
+  ![](resources/media/powerpoint.JPG)
+
+---
+
+# Dashboards
+
+  ![](resources/media/flexdashboard.JPG)
+
+---
+
+# Tutorials
+
+  ![](resources/media/tutorial.JPG)
+
+---
+
+# Books
+
+  .left-column[
+    [
+      ![](https://bookdown.org/yihui/bookdown/images/logo.png#smaller)
+    ](https://bookdown.org/yihui/bookdown/)
+  ]
+
+  .right-column[
+    ![](resources/media/bookdown.JPG)
+  ]
+
+---
+
+# Blogs
+
+  .left-column[[![](https://bookdown.org/yihui/blogdown/images/logo.png#smaller)](https://bookdown.org/yihui/blogdown/)]
+
+  .right-column[[![](resources/media/blogdown.JPG)](https://alison.rbind.io/post/2017-06-12-up-and-running-with-blogdown/)]
+
+---
+
+# Paged HTML Documents 
+
+.left-column[![](https://user-images.githubusercontent.com/163582/51942716-66be4180-23dd-11e9-8dbc-fdb4f465d1c2.png#smaller)
+
+Paginated HTML with R Markdown:   [pagedown](https://github.com/rstudio/pagedown)  
+
+Current templates include [JSS article, CV, letter, business cards](https://pagedown.rbind.io/#applications)
+]
+.right-column[
+  .pull-left[
+    ![](resources/media/scds_cover.jpg#fit)
+  ]
+  .pull-right[
+    ![](resources/media/scds_page.jpg#fit)
+  ]
+] 
+
+???
+
+Uses Paged.js polyfill to implement CSS support 
+R Markdown document, means all the advantages are available
+Most stable in Chrome browser
+Customizable using HTML/CSS:
+ - add university design
+ - work with marketing dept/webmaster
+ - Combine the content creation and styling
+ - Perfect for reports where styling does not change a lot (annual reports)
+
+---
+class: middle, center
+
+# R Markdown
+
+---
+layout:true
+class: middle, left
+---
+
+# Headers
+
+![Use # to create headers.  
+Multiple #'s create lower level headers](resources/media/images/reproducible_analysis/md_headers.png)
+
+---
+
+# Text
+
+![Rendered as plain text. Format with *, **, or  ](resources/media/images/reproducible_analysis/md_text.png)
+
+---
+
+# Lists
+
+![Use asterisks to make bullet points and numbers for numbered lists](resources/media/images/reproducible_analysis/md_lists.png)
+
+---
+
+# Hyperlinks
+
+![Link text within brackets with the URL in parantheses](resources/media/images/reproducible_analysis/md_links.png)
+
+---
+
+# Images
+
+![A link preceded by an ! will insert an image. *URL if image is hosted online, file path otherwise*](resources/media/images/reproducible_analysis/md_images.png)
+
+---
+
+# Math Expressions
+
+![Written with latex math commands and surrounded by $'s](resources/media/images/reproducible_analysis/md_expressions.png)
+
+---
+
+# Math Equations
+
+
+
+![Two $'s will center equation blocks](resources/media/images/reproducible_analysis/md_equations.png)
+
+---
+class: middle, center
+
+# Code
+
+---
+
+# Inline
+
+Place code within a sentence with ` `r knitr::inline_expr("*code here*")` `. R Markdown will replace the code with its results.
+
+For example, ` `r knitr::inline_expr("87 + 78")` ` will evaluate to `r 87 + 78`
+
+---
+# Chunks
+
+Insert a "chunk" of R code using backticks and braces.
+
+![](resources/media/images/reproducible_analysis/md_chunk.png)
+
+When the report is rendered, R Markdown will evaluate the code and include the results, while also removing the backticks and braces.
+
+Shortcut to Insert Chunk:
+
+* **Ctrl + Alt + I** (PC)
+* **Cmd + Option + I** (Mac)
+
+---
+
+# Chunk Options
+
+![R Markdown will include both the code and the results as the default](resources/media/images/reproducible_analysis/md_chunk_options.png)
+
+---
+
+# echo = FALSE
+
+![Hides the code. Useful for graphical outputs](resources/media/images/reproducible_analysis/md_chunk_echo.png)
+
+---
+
+# eval = FALSE
+
+![Stops code from running. Useful for teaching or showcasing](resources/media/images/reproducible_analysis/md_chunk_eval.png)
+
+---
+
+# include = FALSE
+
+![Runs code, but prevents code and results from appearing. Useful when you only want after-effect](resources/media/images/reproducible_analysis/md_chunk_include.png)
+
+---
+
+# fig.height/fig.width
+
+![Specify different width and height values (in inches), separated by commas](resources/media/images/reproducible_analysis/md_chunk_fig.png)
+
+---
+
+# How it Works
+
+  .center[![](resources/media/images/reproducible_analysis/knitr_pandoc.png)]
+  
+---
+class: middle, center
+
+# Parameterized
+  
+---
+
+# YAML
+
+.pull-left[
+![A section of key:value pairs beginning and ending with dashed lines](resources/media/images/reproducible_analysis/param_yaml1.png)
+]
+
+.pull-right[
+![Rendered at beginning of document](resources/media/images/reproducible_analysis/param_yaml2.png)
+]
+  
+---
+
+# Parameters
+
+![Creates a list of values that can be called as inline or chunk code](resources/media/images/reproducible_analysis/param_params.png)
+  
+---
+
+# Using Parameters
+
+```yaml
+---
+params:
+  location: Southern Brewing
+  date: !r format(Sys.Date(), "%B %d, %Y")
+---
+
+Welcome to this workshop, given at `r knitr::inline_expr("params$location")` on `r knitr::inline_expr("params$date")`.
+```
+
+.center[`r fontawesome::fa(name = "arrow-down", height = "26pt", fill = "black")`]
+
+Welcome to this workshop, given at `r params$location` on `r params$date`.
+  
+---
+
+# render()
+
+Render at the command line with the default YAML options
+
+```{r, echo=TRUE, eval=FALSE}
+library(rmarkdown)
+render("my-presentation.Rmd")
+```
+
+Render at the command line with set parameters
+
+```{r, echo=TRUE, eval=FALSE}
+library(rmarkdown)
+render("my-presentation.Rmd",
+       params = list(location = "USF",
+                     date = "August 5, 2019"))
+```
+
+---
+
+# Things to Remember
+
+1. Document is ran in a fresh R session using knitr, therefore all libraries used should be loaded *within the document*
+2. Objects created in a code chunk are available to code in later chunks
+  
+---
+
+# Knitr is MULTI-Lingual
+
+* SQL
+* Python
+* SAS
+* [Many more](https://bookdown.org/yihui/rmarkdown/language-engines.html)
+  
+---
+
+# engine
+
+![To use non-R code, change the chunk label from `r` to the desired language](resources/media/images/reproducible_analysis/knitr_engine.png)
+  
+---
+
+# Note for SAS
+
+![If **SAS** is not in your `PATH` variable, you need to specify its full path with the `engine.path` option](resources/media/images/reproducible_analysis/knitr_sas.png)
+
+---
+
+# Resources 
+
+.pull-left[
+[![Online and **FREE** bookdown.org/yihui/rmarkdown/](https://bookdown.org/yihui/rmarkdown/images/cover.png#fit)](https://bookdown.org/yihui/rmarkdown/)
+]
+
+.pull-right[[![Easy and fast way to brush up on syntax and structure  rstudio.com/resources/cheatsheets/#rmarkdown](https://www.rstudio.com/wp-content/uploads/2018/08/rmarkdown-2.0-600x464.png)](https://www.rstudio.com/resources/cheatsheets/#rmarkdown)
+]
+
+---
+class: center, middle
+# Reproducibility
+
+Everything is text so can take advantage through:
+- Copy/pasting code errors into search engines
+- Version contol (git)
+- Portability (minimal file size)
+
+---
+class: center, middle
+# Questions?
